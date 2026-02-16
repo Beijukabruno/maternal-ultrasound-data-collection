@@ -24,7 +24,10 @@ jobs:
 
 
       - name: Install huggingface_hub with CLI
-        run: pip install "huggingface_hub[cli]"
+        run: |
+          python -m pip install --upgrade pip
+          pip install "huggingface_hub[cli]"
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Push to Hugging Face Spaces
         env:
