@@ -2,72 +2,31 @@ name: Deploy to Hugging Face Spaces
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-        lfs: true
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          lfs: true
 
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
 
-    - name: Install dependencies
-      run: |
-        pip install huggingface_hub
+      - name: Install dependencies
+        run: |
+          pip install huggingface_hub
 
-    - name: Create Hugging Face Space
-      env:
-        HF_TOKEN: ${{ secrets.HF_TOKEN }}
-      run: |
-        python <<EOF
-from huggingface_hub import HfApi, create_repo
-import os
-
-api = HfApi()
-token = os.getenv('HF_TOKEN')
-
-try:
-    create_repo(
-        repo_id='Beijuka/maternal-ultrasound-data-collection',
-        token=token,
-        repo_type='space',
-        space_sdk='docker',
-        exist_ok=True,
-        private=False
-    )
-    print('Space created or already exists')
-except Exception as e:
-    print(f'Error creating space: {e}')
-EOF
-
-    - name: Deploy to Hugging Face Spaces
-      env:
-        HF_TOKEN: ${{ secrets.HF_TOKEN }}
-      run: |
-        python <<EOF
-from huggingface_hub import HfApi
-import os
-
-api = HfApi()
-
-try:
-    api.upload_folder(
-        folder_path='.',
-        repo_id='Beijuka/maternal-ultrasound-data-collection',
-        repo_type='space',
-        token=os.getenv('HF_TOKEN'),
-        ignore_patterns=['.git*', '__pycache__', '*.pyc', '.github/', 'data/']
-    )
-    print('Successfully deployed to Hugging Face Spaces!')
-except Exception as e:
-    print(f'Error during deployment: {e}')
-    exit(1)
-EOF
+      - name: Deploy to Hugging Face Spaces
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python scripts/hf_create_and_upload.py
