@@ -22,15 +22,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Install huggingface_hub
-        run: pip install huggingface_hub
+
+      - name: Install huggingface_hub with CLI
+        run: pip install "huggingface_hub[cli]"
 
       - name: Push to Hugging Face Spaces
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           python -m pip install huggingface_hub
-          python -m huggingface_hub.cli login --token "$HF_TOKEN"
-          python -m huggingface_hub.cli repo create ${{ github.repository }} --type=space --space-sdk=streamlit --yes || true
+          huggingface-cli login --token "$HF_TOKEN"
+          huggingface-cli repo create ${{ github.repository }} --type=space --space-sdk=streamlit --yes || true
           git remote add hf https://huggingface.co/spaces/${{ github.repository }} || true
           git push hf main --force
